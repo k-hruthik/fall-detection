@@ -4,31 +4,26 @@ from model import train_model
 import numpy as np
 import pandas as pd
 
-
 def main():
     data_path = "data/accelerometer.csv"
     df = load_data(data_path)
     df = normalize_data(df)
 
-    # Check class balance
-    label_counts = df['label'].value_counts()
-    print("Label distribution:\n", label_counts)
+    print("Label distribution:\n", df['label'].value_counts())
 
-    if len(label_counts) < 2:
-        raise ValueError("❌ Dataset must contain at least two classes (fall and no fall) to train the model.")
-
-    X_seg, y = segment_data(df)
-
-    # Debug segmented label distribution
+    X, y = segment_data(df)
     unique, counts = np.unique(y, return_counts=True)
     print("Segmented labels:", dict(zip(unique, counts)))
 
-    # Optional: save to CSV to inspect manually
-    pd.Series(y).to_csv("segmented_labels.csv", index=False)
+    if len(np.unique(y)) < 2:
+        print("❌ Error: Only one class found after segmentation. Please adjust the `fall_ratio` threshold.")
+        return
 
-    X = extract_features(X_seg)
-    train_model(X, y)
+    # ✅ Extract time + frequency domain features
+    X_features = extract_features(X)
+    print("Feature shape:", X_features.shape)
 
+    train_model(X_features, y)
 
 if __name__ == "__main__":
     main()

@@ -12,7 +12,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 def train_model(X, y):
     """Train and compare SVM, RandomForest, and KNN classifiers."""
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
 
     # -- SVM --
     print("\n=== Training SVM ===")
@@ -27,14 +29,18 @@ def train_model(X, y):
     evaluate_model(best_svm, X_test, y_test, "SVM")
 
     # Save SVM model
-    os.makedirs("../model", exist_ok=True)
-    dump(best_svm, "../model/fall_detector_svm.joblib")
+    os.makedirs("model", exist_ok=True)
+
+    dump(best_svm, "model/fall_detector_svm.joblib")
+
 
     # -- Random Forest --
     print("\n=== Training Random Forest ===")
     rf = RandomForestClassifier(n_estimators=100, random_state=42)
     rf.fit(X_train, y_train)
     evaluate_model(rf, X_test, y_test, "Random Forest")
+    dump(rf, "model/fall_detector_rf.joblib")
+
 
     # -- k-NN --
     print("\n=== Training k-NN ===")
@@ -48,12 +54,13 @@ def evaluate_model(model, X_test, y_test, name):
     y_pred = model.predict(X_test)
     print(f"\n[{name}] Accuracy:", accuracy_score(y_test, y_pred))
     print(f"[{name}] Precision:", precision_score(y_test, y_pred, average='weighted', zero_division=1))
-    print(f"[{name}] Recall:", recall_score(y_test, y_pred, average='weighted'))
+    print(f"[{name}] Recall:", recall_score(y_test, y_pred, average='weighted', zero_division=1))
     print(f"[{name}] F1 Score:", f1_score(y_test, y_pred, average='weighted', zero_division=1))
     plot_confusion_matrix(y_test, y_pred, title=f"Confusion Matrix - {name}")
 
 
 def plot_confusion_matrix(y_true, y_pred, title="Confusion Matrix"):
+    """Plot and show confusion matrix."""
     cm = confusion_matrix(y_true, y_pred)
     plt.figure(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")

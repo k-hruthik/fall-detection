@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import shuffle
 
 
 def load_data(file_path):
@@ -25,15 +26,8 @@ def segment_data(df, window_size=100, step_size=50):
         segment = df[['x', 'y', 'z']].iloc[start:end].values
         window_labels = df['label'].iloc[start:end]
         fall_ratio = window_labels.sum() / len(window_labels)
-        label = 1 if fall_ratio >= 0.3 else 0
-
+        label = 1 if fall_ratio >= 0.4 else 0
         segments.append(segment)
         labels.append(label)
+    segments, labels = shuffle(segments, labels, random_state=42)
     return np.array(segments), np.array(labels)
-
-
-if __name__ == "__main__":
-    df = load_data("../data/accelerometer.csv")
-    df = normalize_data(df)
-    X, y = segment_data(df)
-    print(f"Segments: {X.shape}, Labels: {y.shape}")
